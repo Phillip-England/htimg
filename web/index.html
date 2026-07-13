@@ -1,0 +1,416 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>htimg</title>
+  <style>
+    :root {
+      color-scheme: light;
+      --bg: #f7f7f4;
+      --panel: #ffffff;
+      --text: #202124;
+      --muted: #666d73;
+      --line: #d8dadd;
+      --accent: #146c5c;
+      --accent-dark: #0d4f43;
+      --danger: #9b1c1c;
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      margin: 0;
+      min-height: 100vh;
+      background: var(--bg);
+      color: var(--text);
+      font-family: ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    }
+
+    header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 16px;
+      padding: 18px 24px;
+      border-bottom: 1px solid var(--line);
+      background: var(--panel);
+    }
+
+    h1 {
+      margin: 0;
+      font-size: 18px;
+      font-weight: 700;
+      letter-spacing: 0;
+    }
+
+    main {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) minmax(320px, 520px);
+      gap: 18px;
+      padding: 18px;
+      min-height: calc(100vh - 66px);
+    }
+
+    .editors, .output {
+      min-width: 0;
+    }
+
+    .editors {
+      display: grid;
+      grid-template-rows: auto auto 1fr 1fr;
+      gap: 14px;
+    }
+
+    label, .mode-group {
+      display: flex;
+      flex-direction: column;
+      min-height: 0;
+      gap: 8px;
+      font-size: 13px;
+      font-weight: 650;
+      color: var(--muted);
+    }
+
+    .mode-row {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 8px;
+      padding: 4px;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      background: var(--panel);
+    }
+
+    .mode-row label {
+      min-height: 38px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      border-radius: 6px;
+      color: var(--text);
+      cursor: pointer;
+    }
+
+    .mode-row input {
+      position: absolute;
+      inline-size: 1px;
+      block-size: 1px;
+      opacity: 0;
+      pointer-events: none;
+    }
+
+    .mode-row label:has(input:checked) {
+      background: var(--accent);
+      color: #fff;
+    }
+
+    textarea {
+      width: 100%;
+      min-height: 220px;
+      height: 100%;
+      resize: vertical;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      padding: 14px;
+      background: #101214;
+      color: #f4f7f7;
+      font: 14px/1.5 ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", monospace;
+      outline: none;
+    }
+
+    textarea:focus, input:focus {
+      border-color: var(--accent);
+      box-shadow: 0 0 0 3px rgba(20, 108, 92, 0.16);
+    }
+
+    .url-panel {
+      display: none;
+      padding: 14px;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      background: var(--panel);
+    }
+
+    body[data-mode="url"] .url-panel {
+      display: flex;
+    }
+
+    body[data-mode="url"] .paste-field {
+      display: none;
+    }
+
+    .output {
+      display: flex;
+      flex-direction: column;
+      gap: 14px;
+    }
+
+    .controls {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 10px;
+      padding: 14px;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      background: var(--panel);
+    }
+
+    .controls label {
+      gap: 6px;
+    }
+
+    input {
+      width: 100%;
+      height: 38px;
+      border: 1px solid var(--line);
+      border-radius: 6px;
+      padding: 0 10px;
+      font: inherit;
+      background: #fff;
+      color: var(--text);
+      outline: none;
+    }
+
+    button {
+      grid-column: 1 / -1;
+      height: 42px;
+      border: 0;
+      border-radius: 6px;
+      background: var(--accent);
+      color: #fff;
+      font: inherit;
+      font-weight: 750;
+      cursor: pointer;
+    }
+
+    button:hover {
+      background: var(--accent-dark);
+    }
+
+    button:disabled {
+      cursor: progress;
+      opacity: 0.7;
+    }
+
+    .preview {
+      display: grid;
+      place-items: center;
+      min-height: 360px;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      background:
+        linear-gradient(45deg, #ecefed 25%, transparent 25%),
+        linear-gradient(-45deg, #ecefed 25%, transparent 25%),
+        linear-gradient(45deg, transparent 75%, #ecefed 75%),
+        linear-gradient(-45deg, transparent 75%, #ecefed 75%);
+      background-size: 20px 20px;
+      background-position: 0 0, 0 10px, 10px -10px, -10px 0;
+      overflow: auto;
+    }
+
+    .preview img {
+      display: block;
+      max-width: 100%;
+      height: auto;
+      box-shadow: 0 8px 28px rgba(15, 20, 24, 0.18);
+    }
+
+    .status {
+      min-height: 20px;
+      color: var(--muted);
+      font-size: 13px;
+    }
+
+    .status.error {
+      color: var(--danger);
+    }
+
+    @media (max-width: 860px) {
+      main {
+        grid-template-columns: 1fr;
+      }
+
+      .editors {
+        grid-template-rows: none;
+      }
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <h1>htimg</h1>
+    <span>HTML, CSS, or URL to PNG</span>
+  </header>
+
+  <main>
+    <section class="editors">
+      <div class="mode-group">
+        Source
+        <div class="mode-row" role="radiogroup" aria-label="Source">
+          <label>
+            <input type="radio" name="mode" value="paste" checked>
+            Paste
+          </label>
+          <label>
+            <input type="radio" name="mode" value="url">
+            URL
+          </label>
+        </div>
+      </div>
+
+      <label class="url-panel">
+        Website URL
+        <input id="url" type="url" placeholder="https://example.com" autocomplete="url">
+      </label>
+
+      <label class="paste-field">
+        HTML
+        <textarea id="html" spellcheck="false"><main class="card">
+  <p class="eyebrow">Snapshot</p>
+  <h2>HTML rendered to an image</h2>
+  <p>Paste markup and CSS, choose a viewport, then render a PNG.</p>
+</main></textarea>
+      </label>
+
+      <label class="paste-field">
+        CSS
+        <textarea id="css" spellcheck="false">body {
+  display: grid;
+  place-items: center;
+  min-height: 100vh;
+  background: #e8efe9;
+  font-family: Inter, ui-sans-serif, system-ui, sans-serif;
+}
+
+.card {
+  width: 680px;
+  padding: 56px;
+  background: white;
+  border: 1px solid #ccd8d0;
+  border-radius: 8px;
+}
+
+.eyebrow {
+  margin: 0 0 12px;
+  color: #146c5c;
+  font-weight: 800;
+  text-transform: uppercase;
+}
+
+h2 {
+  margin: 0 0 14px;
+  font-size: 48px;
+  line-height: 1;
+}
+
+p {
+  margin: 0;
+  color: #4f5c57;
+  font-size: 20px;
+}</textarea>
+      </label>
+    </section>
+
+    <section class="output">
+      <form class="controls" id="form">
+        <label>
+          Width
+          <input id="width" type="number" min="100" max="5000" value="1200">
+        </label>
+        <label>
+          Height
+          <input id="height" type="number" min="100" max="5000" value="800">
+        </label>
+        <label>
+          Scale
+          <input id="scale" type="number" min="1" max="4" value="1">
+        </label>
+        <button id="render" type="submit">Render PNG</button>
+      </form>
+
+      <div class="preview" id="preview"></div>
+      <div class="status" id="status"></div>
+    </section>
+  </main>
+
+  <script>
+    const form = document.querySelector("#form");
+    const statusEl = document.querySelector("#status");
+    const preview = document.querySelector("#preview");
+    const button = document.querySelector("#render");
+    const modeInputs = document.querySelectorAll('input[name="mode"]');
+    let currentURL = "";
+
+    function selectedMode() {
+      return document.querySelector('input[name="mode"]:checked').value;
+    }
+
+    function syncMode() {
+      document.body.dataset.mode = selectedMode();
+    }
+
+    modeInputs.forEach((input) => input.addEventListener("change", syncMode));
+    syncMode();
+
+    form.addEventListener("submit", async (event) => {
+      event.preventDefault();
+      statusEl.className = "status";
+      statusEl.textContent = "Rendering...";
+      button.disabled = true;
+
+      try {
+        const mode = selectedMode();
+        const payload = {
+          width: Number(document.querySelector("#width").value),
+          height: Number(document.querySelector("#height").value),
+          deviceScaleFactor: Number(document.querySelector("#scale").value),
+          filename: "snapshot.png"
+        };
+        if (mode === "url") {
+          payload.url = document.querySelector("#url").value;
+        } else {
+          payload.html = document.querySelector("#html").value;
+          payload.css = document.querySelector("#css").value;
+        }
+
+        const response = await fetch("/api/render", {
+          method: "POST",
+          headers: {"Content-Type": "application/json"},
+          body: JSON.stringify(payload)
+        });
+
+        if (!response.ok) {
+          const payload = await response.json().catch(() => ({error: "render failed"}));
+          throw new Error(payload.error || "render failed");
+        }
+
+        const blob = await response.blob();
+        if (currentURL) {
+          URL.revokeObjectURL(currentURL);
+        }
+        currentURL = URL.createObjectURL(blob);
+        preview.innerHTML = "";
+
+        const link = document.createElement("a");
+        link.href = currentURL;
+        link.download = "snapshot.png";
+
+        const img = document.createElement("img");
+        img.src = currentURL;
+        img.alt = "Rendered PNG";
+        link.append(img);
+        preview.append(link);
+        statusEl.textContent = `${blob.size.toLocaleString()} bytes`;
+      } catch (error) {
+        statusEl.className = "status error";
+        statusEl.textContent = error.message;
+      } finally {
+        button.disabled = false;
+      }
+    });
+  </script>
+</body>
+</html>
