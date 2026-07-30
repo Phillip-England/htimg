@@ -14,10 +14,10 @@ On macOS, `htimg` checks the standard Chrome and Chromium app paths. On other sy
 `htimg` serves on the dedicated local app port:
 
 ```text
-http://127.0.0.1:8765
+http://127.0.0.1:9993
 ```
 
-You can override the bind address with `--addr` or `HTIMG_ADDR`, but the documented default for this project is `127.0.0.1:8765`.
+You can override the bind address with `--addr` or `HTIMG_ADDR`, but the documented default for this project is `127.0.0.1:9993`.
 
 ## Initialize
 
@@ -70,15 +70,26 @@ Or during development:
 go run .
 ```
 
-Open `http://127.0.0.1:8765` to view the public showcase page.
+Open `http://127.0.0.1:9993` to view the public showcase page.
 
 Optional flags:
 
 ```sh
-htimg --env ./config/.env --addr 127.0.0.1:8765
+htimg --env ./config/.env --addr 127.0.0.1:9993
 ```
 
 Startup fails if the environment file is missing or any required value is empty.
+
+## Docker
+
+Run the app locally in Docker:
+
+```sh
+make docker
+```
+
+The target builds the image, publishes `http://127.0.0.1:9993`, and bind-mounts
+`./config` and `./data` so the environment file and SQLite database persist.
 
 ## Operator Security
 
@@ -106,7 +117,7 @@ curl -o snapshot.png \
     "format": "png",
     "background": "solid"
   }' \
-  http://127.0.0.1:8765/api/render
+  http://127.0.0.1:9993/api/render
 ```
 
 Render a public website URL:
@@ -122,7 +133,7 @@ curl -o snapshot.jpg \
     "format": "jpeg",
     "background": "solid"
   }' \
-  http://127.0.0.1:8765/api/render
+  http://127.0.0.1:9993/api/render
 ```
 
 Request fields:

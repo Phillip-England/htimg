@@ -24,7 +24,7 @@ import (
 var webFS embed.FS
 
 const maxRenderBodyBytes = 20 << 20
-const defaultAddr = "127.0.0.1:8765"
+const defaultAddr = "127.0.0.1:9993"
 const defaultEnvPath = "config/.env"
 
 func main() {

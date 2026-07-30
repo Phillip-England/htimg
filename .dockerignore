@@ -1,0 +1,10 @@
+.git
+.env
+config/.env
+data
+tmp
+*.log
+htimg
+dist
+build
+vendor
