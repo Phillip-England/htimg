@@ -11,6 +11,7 @@ import (
 	"strings"
 	"time"
 
+	"github.com/chromedp/cdproto/cdp"
 	"github.com/chromedp/cdproto/emulation"
 	"github.com/chromedp/cdproto/page"
 	"github.com/chromedp/chromedp"
@@ -25,6 +26,8 @@ type Request struct {
 	Width             int64  `json:"width"`
 	Height            int64  `json:"height"`
 	DeviceScaleFactor int64  `json:"deviceScaleFactor"`
+	Format            string `json:"format"`
+	Background        string `json:"background"`
 	Filename          string `json:"filename"`
 }
 
@@ -68,6 +71,9 @@ func (r *Renderer) Render(ctx context.Context, req Request) ([]byte, error) {
 	actions := []chromedp.Action{
 		emulation.SetDeviceMetricsOverride(req.Width, req.Height, float64(req.DeviceScaleFactor), false),
 	}
+	if req.Background == "transparent" && req.Format == "png" {
+		actions = append(actions, emulation.SetDefaultBackgroundColorOverride().WithColor(&cdp.RGBA{A: 0}))
+	}
 	if req.URL != "" {
 		actions = append(actions, chromedp.Navigate(req.URL))
 	} else {
@@ -93,7 +99,7 @@ func (r *Renderer) Render(ctx context.Context, req Request) ([]byte, error) {
 			}
 
 			image, err = page.CaptureScreenshot().
-				WithFormat(page.CaptureScreenshotFormatPng).
+				WithFormat(screenshotFormat(req.Format)).
 				WithCaptureBeyondViewport(true).
 				WithClip(clip).
 				Do(ctx)
@@ -144,6 +150,14 @@ func normalize(req Request) Request {
 	if req.DeviceScaleFactor == 0 {
 		req.DeviceScaleFactor = 1
 	}
+	req.Format = strings.ToLower(strings.TrimSpace(req.Format))
+	if req.Format == "" {
+		req.Format = "png"
+	}
+	req.Background = strings.ToLower(strings.TrimSpace(req.Background))
+	if req.Background == "" {
+		req.Background = "solid"
+	}
 	return req
 }
 
@@ -171,7 +185,23 @@ func validate(req Request) error {
 	if req.DeviceScaleFactor < 1 || req.DeviceScaleFactor > 4 {
 		return fmt.Errorf("%w: deviceScaleFactor must be between 1 and 4", ErrInvalidRequest)
 	}
+	if req.Format != "png" && req.Format != "jpeg" {
+		return fmt.Errorf("%w: format must be png or jpeg", ErrInvalidRequest)
+	}
+	if req.Background != "solid" && req.Background != "transparent" {
+		return fmt.Errorf("%w: background must be solid or transparent", ErrInvalidRequest)
+	}
+	if req.Format == "jpeg" && req.Background == "transparent" {
+		return fmt.Errorf("%w: transparent background requires png format", ErrInvalidRequest)
+	}
 	return nil
+}
+
+func screenshotFormat(format string) page.CaptureScreenshotFormat {
+	if format == "jpeg" {
+		return page.CaptureScreenshotFormatJpeg
+	}
+	return page.CaptureScreenshotFormatPng
 }
 
 func document(markup, css string) string {

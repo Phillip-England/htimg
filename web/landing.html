@@ -1,0 +1,421 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>htimg - HTML to image renderer</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Geist:wght@400;500;600;700;800&family=JetBrains+Mono:wght@500&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      color-scheme: dark;
+      --bg: #09090b;
+      --card: #111114;
+      --raised: #17171b;
+      --border: #2a2a32;
+      --text: #f4f4f5;
+      --muted: #a1a1aa;
+      --accent: #6366f1;
+      --success: #22c55e;
+      --shadow: 0 18px 50px rgba(0, 0, 0, 0.34);
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      margin: 0;
+      min-height: 100vh;
+      background:
+        radial-gradient(circle at 50% -16%, rgba(99, 102, 241, 0.2), transparent 34rem),
+        linear-gradient(rgba(255, 255, 255, 0.018) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(255, 255, 255, 0.018) 1px, transparent 1px),
+        var(--bg);
+      background-size: auto, 42px 42px, 42px 42px, auto;
+      color: var(--text);
+      font-family: "Geist", Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      line-height: 1.5;
+    }
+
+    .page {
+      width: min(100%, 1180px);
+      margin: 0 auto;
+      padding: 24px clamp(16px, 4vw, 40px) 56px;
+    }
+
+    header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 16px;
+      min-height: 60px;
+      border-bottom: 1px solid var(--border);
+    }
+
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      min-width: 0;
+    }
+
+    .brand img {
+      width: 36px;
+      height: 36px;
+      border: 1px solid rgba(255, 255, 255, 0.14);
+      border-radius: 9px;
+      background: #fff;
+      object-fit: cover;
+      box-shadow: 0 8px 22px rgba(0, 0, 0, 0.25);
+    }
+
+    .brand strong {
+      display: block;
+      font-size: 16px;
+      line-height: 1.1;
+    }
+
+    .brand span, .topline, .muted {
+      color: var(--muted);
+    }
+
+    .brand span {
+      display: block;
+      margin-top: 3px;
+      font-size: 12px;
+    }
+
+    .topline {
+      font-size: 13px;
+      text-align: right;
+    }
+
+    .hero {
+      display: grid;
+      grid-template-columns: minmax(0, 0.92fr) minmax(420px, 1.08fr);
+      align-items: center;
+      gap: clamp(22px, 4vw, 48px);
+      padding: clamp(44px, 8vw, 92px) 0 40px;
+    }
+
+    h1 {
+      margin: 0;
+      max-width: 720px;
+      font-size: clamp(42px, 7vw, 76px);
+      font-weight: 800;
+      line-height: 0.96;
+      letter-spacing: 0;
+    }
+
+    .hero p {
+      max-width: 620px;
+      margin: 18px 0 0;
+      color: var(--muted);
+      font-size: 18px;
+    }
+
+    .badges {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      margin-top: 24px;
+    }
+
+    .badge {
+      display: inline-flex;
+      align-items: center;
+      min-height: 32px;
+      border: 1px solid var(--border);
+      border-radius: 999px;
+      padding: 0 12px;
+      background: rgba(17, 17, 20, 0.9);
+      color: #d4d4d8;
+      font-size: 13px;
+      font-weight: 600;
+    }
+
+    .showcase {
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      background: rgba(17, 17, 20, 0.95);
+      box-shadow: var(--shadow);
+      overflow: hidden;
+    }
+
+    .window-bar {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      min-height: 48px;
+      border-bottom: 1px solid var(--border);
+      padding: 0 14px;
+      background: #0c0c0f;
+    }
+
+    .dots {
+      display: flex;
+      gap: 6px;
+    }
+
+    .dot {
+      width: 10px;
+      height: 10px;
+      border-radius: 99px;
+      background: #3f3f46;
+    }
+
+    .window-title {
+      color: var(--muted);
+      font: 12px/1 "JetBrains Mono", ui-monospace, monospace;
+    }
+
+    .preview {
+      display: grid;
+      grid-template-columns: 0.9fr 1.1fr;
+      min-height: 360px;
+    }
+
+    .code {
+      border-right: 1px solid var(--border);
+      padding: 22px;
+      background: var(--raised);
+      color: #e4e4e7;
+      font: 13px/1.65 "JetBrains Mono", ui-monospace, monospace;
+      overflow: hidden;
+    }
+
+    .code .accent {
+      color: #a5b4fc;
+    }
+
+    .output {
+      display: grid;
+      place-items: center;
+      padding: 28px;
+      background:
+        linear-gradient(45deg, rgba(255, 255, 255, 0.035) 25%, transparent 25%),
+        linear-gradient(-45deg, rgba(255, 255, 255, 0.035) 25%, transparent 25%),
+        linear-gradient(45deg, transparent 75%, rgba(255, 255, 255, 0.035) 75%),
+        linear-gradient(-45deg, transparent 75%, rgba(255, 255, 255, 0.035) 75%),
+        #0c0c0f;
+      background-size: 22px 22px;
+      background-position: 0 0, 0 11px, 11px -11px, -11px 0;
+    }
+
+    .image-card {
+      width: min(100%, 360px);
+      aspect-ratio: 1.65;
+      display: grid;
+      align-content: center;
+      gap: 10px;
+      border: 1px solid #3f3f4a;
+      border-radius: 12px;
+      padding: 28px;
+      background: #f4f4f5;
+      color: #09090b;
+      box-shadow: 0 22px 60px rgba(0, 0, 0, 0.42);
+    }
+
+    .image-card span {
+      color: var(--accent);
+      font-size: 12px;
+      font-weight: 800;
+      text-transform: uppercase;
+    }
+
+    .image-card strong {
+      max-width: 270px;
+      font-size: 32px;
+      line-height: 1;
+      letter-spacing: 0;
+    }
+
+    .image-card p {
+      margin: 0;
+      color: #52525b;
+      font-size: 14px;
+    }
+
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 16px;
+      margin-top: 18px;
+    }
+
+    .card {
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      background: rgba(17, 17, 20, 0.95);
+      box-shadow: var(--shadow);
+      padding: 18px;
+    }
+
+    .card h2 {
+      margin: 0;
+      font-size: 15px;
+    }
+
+    .card p {
+      margin: 8px 0 0;
+      color: var(--muted);
+      font-size: 14px;
+    }
+
+    .steps {
+      display: grid;
+      grid-template-columns: repeat(4, minmax(0, 1fr));
+      gap: 10px;
+      margin-top: 18px;
+    }
+
+    .step {
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 14px;
+      background: rgba(23, 23, 27, 0.86);
+    }
+
+    .step span {
+      color: var(--success);
+      font-size: 12px;
+      font-weight: 800;
+    }
+
+    .step p {
+      margin: 8px 0 0;
+      color: var(--text);
+      font-size: 13px;
+      font-weight: 650;
+    }
+
+    @media (max-width: 920px) {
+      .hero, .preview {
+        grid-template-columns: 1fr;
+      }
+
+      .code {
+        border-right: 0;
+        border-bottom: 1px solid var(--border);
+      }
+
+      .grid, .steps {
+        grid-template-columns: 1fr 1fr;
+      }
+    }
+
+    @media (max-width: 620px) {
+      .page {
+        padding-inline: 14px;
+      }
+
+      header {
+        align-items: flex-start;
+        flex-direction: column;
+        padding-bottom: 14px;
+      }
+
+      .topline {
+        text-align: left;
+      }
+
+      h1 {
+        font-size: 44px;
+      }
+
+      .hero p {
+        font-size: 16px;
+      }
+
+      .grid, .steps {
+        grid-template-columns: 1fr;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="page">
+    <header>
+      <div class="brand">
+        <img src="/logo.webp" alt="htimg">
+        <div>
+          <strong>htimg</strong>
+          <span>HTML -&gt; Image Renderer</span>
+        </div>
+      </div>
+      <div class="topline">Render HTML, CSS, or public webpages into clean shareable images.</div>
+    </header>
+
+    <main>
+      <section class="hero">
+        <div>
+          <h1>Turn web content into production-ready images.</h1>
+          <p>htimg captures markup, stylesheets, and public URLs as PNG or JPEG files with predictable viewport sizing, scale control, and a focused developer workflow.</p>
+          <div class="badges" aria-label="Supported output features">
+            <span class="badge">PNG</span>
+            <span class="badge">JPEG</span>
+            <span class="badge">Transparent backgrounds</span>
+            <span class="badge">Viewport presets</span>
+            <span class="badge">Local-first</span>
+          </div>
+        </div>
+
+        <div class="showcase" aria-label="Renderer preview">
+          <div class="window-bar">
+            <div class="dots" aria-hidden="true">
+              <span class="dot"></span>
+              <span class="dot"></span>
+              <span class="dot"></span>
+            </div>
+            <div class="window-title">1200x630 / png</div>
+          </div>
+          <div class="preview">
+            <pre class="code"><span class="accent">&lt;main class="card"&gt;</span>
+  &lt;p&gt;Snapshot&lt;/p&gt;
+  &lt;h1&gt;HTML rendered
+  to an image&lt;/h1&gt;
+<span class="accent">&lt;/main&gt;</span>
+
+.card {
+  display: grid;
+  background: #f4f4f5;
+}</pre>
+            <div class="output">
+              <div class="image-card">
+                <span>Snapshot</span>
+                <strong>HTML rendered to an image</strong>
+                <p>Designed for fast visual exports.</p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section class="grid" aria-label="Capabilities">
+        <article class="card">
+          <h2>Paste HTML and CSS</h2>
+          <p>Compose custom graphics, social cards, previews, and screenshots from raw markup and stylesheet input.</p>
+        </article>
+        <article class="card">
+          <h2>Capture public URLs</h2>
+          <p>Render a public webpage at a controlled viewport for consistent image output across repeated captures.</p>
+        </article>
+        <article class="card">
+          <h2>Export clean assets</h2>
+          <p>Choose format, scale, dimensions, and background behavior before saving the final image.</p>
+        </article>
+      </section>
+
+      <section class="steps" aria-label="Workflow">
+        <div class="step"><span>01</span><p>Choose HTML/CSS or URL input.</p></div>
+        <div class="step"><span>02</span><p>Set viewport and output format.</p></div>
+        <div class="step"><span>03</span><p>Render with a local browser engine.</p></div>
+        <div class="step"><span>04</span><p>Download, copy, or open the result.</p></div>
+      </section>
+    </main>
+  </div>
+</body>
+</html>

@@ -4,298 +4,682 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>htimg</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Geist:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
   <style>
     :root {
-      color-scheme: light;
-      --bg: #f7f7f4;
-      --panel: #ffffff;
-      --text: #202124;
-      --muted: #666d73;
-      --line: #d8dadd;
-      --accent: #146c5c;
-      --accent-dark: #0d4f43;
-      --danger: #9b1c1c;
+      color-scheme: dark;
+      --bg: #09090b;
+      --card: #111114;
+      --raised: #17171b;
+      --border: #2a2a32;
+      --text: #f4f4f5;
+      --muted: #a1a1aa;
+      --accent: #6366f1;
+      --accent-strong: #818cf8;
+      --accent-soft: rgba(99, 102, 241, 0.16);
+      --success: #22c55e;
+      --danger: #ef4444;
+      --shadow: 0 18px 50px rgba(0, 0, 0, 0.34);
+      --radius: 12px;
     }
 
     * {
       box-sizing: border-box;
     }
 
-    body {
-      margin: 0;
-      min-height: 100vh;
-      background: var(--bg);
-      color: var(--text);
-      font-family: ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    [hidden] {
+      display: none !important;
     }
 
-    header {
+    html {
+      min-width: 0;
+      background: var(--bg);
+    }
+
+    body {
+      margin: 0;
+      min-width: 0;
+      min-height: 100vh;
+      background:
+        radial-gradient(circle at 50% -12%, rgba(99, 102, 241, 0.18), transparent 34rem),
+        linear-gradient(rgba(255, 255, 255, 0.018) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(255, 255, 255, 0.018) 1px, transparent 1px),
+        var(--bg);
+      background-size: auto, 42px 42px, 42px 42px, auto;
+      color: var(--text);
+      font-family: "Geist", Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      font-size: 14px;
+      line-height: 1.45;
+      overflow-x: hidden;
+    }
+
+    button, input, textarea, select {
+      font: inherit;
+    }
+
+    button {
+      border: 0;
+    }
+
+    .app-header {
+      position: sticky;
+      top: 0;
+      z-index: 10;
       display: flex;
       align-items: center;
       justify-content: space-between;
-      gap: 16px;
-      padding: 18px 24px;
-      border-bottom: 1px solid var(--line);
-      background: var(--panel);
+      gap: 24px;
+      min-height: 68px;
+      padding: 12px clamp(16px, 3vw, 32px);
+      border-bottom: 1px solid var(--border);
+      background: rgba(9, 9, 11, 0.82);
+      backdrop-filter: blur(18px);
+    }
+
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      min-width: 0;
+    }
+
+    .brand-logo {
+      width: 36px;
+      height: 36px;
+      flex: 0 0 auto;
+      border: 1px solid rgba(255, 255, 255, 0.14);
+      border-radius: 9px;
+      background: #fff;
+      object-fit: cover;
+      box-shadow: 0 8px 22px rgba(0, 0, 0, 0.25);
+    }
+
+    .brand-copy {
+      min-width: 0;
     }
 
     h1 {
       margin: 0;
-      font-size: 18px;
+      font-size: 16px;
       font-weight: 700;
+      line-height: 1.1;
       letter-spacing: 0;
     }
 
-    main {
-      display: grid;
-      grid-template-columns: minmax(0, 1fr) minmax(320px, 520px);
-      gap: 18px;
-      padding: 18px;
-      min-height: calc(100vh - 66px);
-    }
-
-    .editors, .output {
-      min-width: 0;
-    }
-
-    .editors {
-      display: grid;
-      grid-template-rows: auto auto 1fr 1fr;
-      gap: 14px;
-    }
-
-    label, .mode-group {
-      display: flex;
-      flex-direction: column;
-      min-height: 0;
-      gap: 8px;
-      font-size: 13px;
-      font-weight: 650;
+    .subtitle, .header-note, .muted {
       color: var(--muted);
     }
 
-    .mode-row {
-      display: grid;
-      grid-template-columns: repeat(2, minmax(0, 1fr));
-      gap: 8px;
-      padding: 4px;
-      border: 1px solid var(--line);
-      border-radius: 8px;
-      background: var(--panel);
+    .subtitle {
+      margin-top: 3px;
+      font-size: 12px;
+      line-height: 1.2;
     }
 
-    .mode-row label {
-      min-height: 38px;
+    .header-note {
+      max-width: 430px;
+      text-align: right;
+      font-size: 13px;
+    }
+
+    .header-actions {
       display: flex;
       align-items: center;
+      gap: 12px;
+    }
+
+    .logout-button {
+      display: inline-flex;
+      align-items: center;
       justify-content: center;
-      border-radius: 6px;
+      height: 34px;
+      border: 1px solid var(--border);
+      border-radius: 9px;
+      padding: 0 12px;
+      background: var(--raised);
       color: var(--text);
+      font-size: 13px;
+      font-weight: 650;
       cursor: pointer;
     }
 
-    .mode-row input {
+    main {
+      width: min(100%, 1580px);
+      margin: 0 auto;
+      padding: clamp(16px, 3vw, 32px);
+    }
+
+    .workspace {
+      display: grid;
+      grid-template-columns: minmax(360px, 0.8fr) minmax(520px, 1.2fr);
+      align-items: start;
+      gap: clamp(16px, 2vw, 24px);
+      min-width: 0;
+    }
+
+    .column {
+      display: flex;
+      min-width: 0;
+      flex-direction: column;
+      gap: 16px;
+    }
+
+    .card {
+      min-width: 0;
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      background: rgba(17, 17, 20, 0.95);
+      box-shadow: var(--shadow);
+    }
+
+    .card-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      padding: 16px 16px 0;
+    }
+
+    .card-title {
+      margin: 0;
+      font-size: 13px;
+      font-weight: 650;
+      letter-spacing: 0;
+    }
+
+    .source-card, .settings-card, .preview-card {
+      padding: 16px;
+    }
+
+    .source-card {
+      display: flex;
+      flex-direction: column;
+      gap: 14px;
+    }
+
+    .tabs, .segmented, .presets {
+      display: flex;
+      gap: 6px;
+      min-width: 0;
+      max-width: 100%;
+    }
+
+    .tabs, .segmented {
+      padding: 4px;
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      background: #0c0c0f;
+    }
+
+    .tab, .segment, .preset {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      min-height: 34px;
+      border-radius: 8px;
+      color: var(--muted);
+      font-weight: 600;
+      font-size: 13px;
+      line-height: 1;
+      white-space: nowrap;
+      min-width: 0;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      cursor: pointer;
+      transition: background 160ms ease, color 160ms ease, border-color 160ms ease;
+    }
+
+    .tab {
+      flex: 1 1 0;
+      padding: 0 12px;
+    }
+
+    .segment {
+      flex: 1 1 0;
+      padding: 0 10px;
+    }
+
+    .tab input, .segment input {
       position: absolute;
-      inline-size: 1px;
-      block-size: 1px;
+      width: 1px;
+      height: 1px;
       opacity: 0;
       pointer-events: none;
     }
 
-    .mode-row label:has(input:checked) {
+    .tab:has(input:checked), .segment:has(input:checked) {
       background: var(--accent);
       color: #fff;
     }
 
-    textarea {
-      width: 100%;
-      min-height: 220px;
-      height: 100%;
-      resize: vertical;
-      border: 1px solid var(--line);
-      border-radius: 8px;
-      padding: 14px;
-      background: #101214;
-      color: #f4f7f7;
-      font: 14px/1.5 ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", monospace;
-      outline: none;
-    }
-
-    textarea:focus, input:focus {
-      border-color: var(--accent);
-      box-shadow: 0 0 0 3px rgba(20, 108, 92, 0.16);
-    }
-
-    .url-panel {
+    .source-pane {
       display: none;
-      padding: 14px;
-      border: 1px solid var(--line);
-      border-radius: 8px;
-      background: var(--panel);
     }
 
-    body[data-mode="url"] .url-panel {
+    body[data-mode="paste"] .source-pane[data-pane="paste"],
+    body[data-mode="url"] .source-pane[data-pane="url"] {
       display: flex;
+      width: 100%;
+      min-width: 0;
+      flex-direction: column;
+      gap: 14px;
     }
 
-    body[data-mode="url"] .paste-field {
-      display: none;
+    .field {
+      display: flex;
+      min-width: 0;
+      flex-direction: column;
+      gap: 8px;
     }
 
-    .output {
+    label, .label {
+      color: var(--text);
+      font-size: 12px;
+      font-weight: 650;
+    }
+
+    .help {
+      margin: 0;
+      color: var(--muted);
+      font-size: 12px;
+    }
+
+    input, textarea {
+      width: 100%;
+      min-width: 0;
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      background: var(--raised);
+      color: var(--text);
+      outline: none;
+      transition: border-color 160ms ease, box-shadow 160ms ease, background 160ms ease;
+    }
+
+    input {
+      height: 40px;
+      padding: 0 11px;
+    }
+
+    textarea {
+      min-height: 245px;
+      resize: vertical;
+      overflow: auto;
+      padding: 14px 14px 14px 48px;
+      font: 13px/1.55 "JetBrains Mono", ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", monospace;
+      tab-size: 2;
+      caret-color: var(--accent-strong);
+      background-image: linear-gradient(90deg, #141418 0, #141418 36px, var(--raised) 36px);
+      background-attachment: local;
+    }
+
+    textarea::placeholder, input::placeholder {
+      color: #6f6f78;
+    }
+
+    input:focus, textarea:focus {
+      border-color: var(--accent);
+      box-shadow: 0 0 0 3px var(--accent-soft);
+      background-color: #19191f;
+    }
+
+    .settings-card {
       display: flex;
       flex-direction: column;
       gap: 14px;
     }
 
-    .controls {
+    .settings-grid {
       display: grid;
       grid-template-columns: repeat(3, minmax(0, 1fr));
-      gap: 10px;
-      padding: 14px;
-      border: 1px solid var(--line);
-      border-radius: 8px;
-      background: var(--panel);
+      gap: 12px;
     }
 
-    .controls label {
-      gap: 6px;
+    .presets {
+      flex-wrap: wrap;
     }
 
-    input {
-      width: 100%;
-      height: 38px;
-      border: 1px solid var(--line);
-      border-radius: 6px;
+    .preset {
+      min-width: 0;
+      border: 1px solid var(--border);
+      background: #0c0c0f;
       padding: 0 10px;
-      font: inherit;
-      background: #fff;
-      color: var(--text);
-      outline: none;
     }
 
-    button {
-      grid-column: 1 / -1;
-      height: 42px;
-      border: 0;
-      border-radius: 6px;
+    .preset:hover {
+      border-color: #3f3f4a;
+      color: var(--text);
+    }
+
+    .preset.active {
+      border-color: rgba(99, 102, 241, 0.7);
+      background: var(--accent-soft);
+      color: #dfe1ff;
+    }
+
+    .actions-row {
+      display: grid;
+      grid-template-columns: 1fr;
+      gap: 10px;
+    }
+
+    .primary-button, .secondary-button, .icon-button {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      height: 40px;
+      border-radius: 10px;
+      font-weight: 650;
+      cursor: pointer;
+      transition: background 160ms ease, border-color 160ms ease, color 160ms ease, transform 160ms ease, opacity 160ms ease;
+    }
+
+    .primary-button {
+      width: 100%;
       background: var(--accent);
       color: #fff;
-      font: inherit;
-      font-weight: 750;
-      cursor: pointer;
     }
 
-    button:hover {
-      background: var(--accent-dark);
+    .secondary-button, .icon-button {
+      border: 1px solid var(--border);
+      background: var(--raised);
+      color: var(--text);
+      text-decoration: none;
     }
 
-    button:disabled {
-      cursor: progress;
-      opacity: 0.7;
+    .secondary-button {
+      padding: 0 12px;
     }
 
-    .preview {
-      display: grid;
-      place-items: center;
-      min-height: 360px;
-      border: 1px solid var(--line);
-      border-radius: 8px;
-      background:
-        linear-gradient(45deg, #ecefed 25%, transparent 25%),
-        linear-gradient(-45deg, #ecefed 25%, transparent 25%),
-        linear-gradient(45deg, transparent 75%, #ecefed 75%),
-        linear-gradient(-45deg, transparent 75%, #ecefed 75%);
-      background-size: 20px 20px;
-      background-position: 0 0, 0 10px, 10px -10px, -10px 0;
-      overflow: auto;
+    .icon-button {
+      width: 40px;
+      flex: 0 0 40px;
     }
 
-    .preview img {
+    .primary-button:hover, .secondary-button:hover, .icon-button:hover {
+      transform: translateY(-1px);
+    }
+
+    .primary-button:disabled, .secondary-button:disabled, .icon-button:disabled {
+      cursor: not-allowed;
+      opacity: 0.55;
+      transform: none;
+    }
+
+    .spinner {
+      display: none;
+      width: 14px;
+      height: 14px;
+      border: 2px solid rgba(255, 255, 255, 0.35);
+      border-top-color: #fff;
+      border-radius: 999px;
+      animation: spin 780ms linear infinite;
+    }
+
+    body[data-rendering="true"] .spinner {
       display: block;
-      max-width: 100%;
-      height: auto;
-      box-shadow: 0 8px 28px rgba(15, 20, 24, 0.18);
+    }
+
+    @keyframes spin {
+      to {
+        transform: rotate(360deg);
+      }
+    }
+
+    .preview-card {
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+
+    .preview-toolbar {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      min-height: 40px;
+    }
+
+    .preview-meta {
+      min-width: 0;
     }
 
     .status {
-      min-height: 20px;
+      min-height: 18px;
       color: var(--muted);
-      font-size: 13px;
+      font-size: 12px;
+    }
+
+    .status.success {
+      color: var(--success);
     }
 
     .status.error {
       color: var(--danger);
     }
 
-    @media (max-width: 860px) {
-      main {
-        grid-template-columns: 1fr;
+    .preview-actions {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .preview-frame {
+      position: relative;
+      display: grid;
+      place-items: center;
+      min-height: clamp(420px, 58vh, 760px);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      background:
+        linear-gradient(45deg, rgba(255, 255, 255, 0.035) 25%, transparent 25%),
+        linear-gradient(-45deg, rgba(255, 255, 255, 0.035) 25%, transparent 25%),
+        linear-gradient(45deg, transparent 75%, rgba(255, 255, 255, 0.035) 75%),
+        linear-gradient(-45deg, transparent 75%, rgba(255, 255, 255, 0.035) 75%),
+        #0c0c0f;
+      background-size: 22px 22px;
+      background-position: 0 0, 0 11px, 11px -11px, -11px 0;
+      overflow: hidden;
+    }
+
+    .preview-frame img {
+      display: block;
+      width: 100%;
+      height: 100%;
+      max-width: 100%;
+      max-height: clamp(420px, 58vh, 760px);
+      object-fit: contain;
+      object-position: center;
+      filter: drop-shadow(0 20px 45px rgba(0, 0, 0, 0.45));
+    }
+
+    .empty-state {
+      display: grid;
+      place-items: center;
+      gap: 10px;
+      padding: 28px;
+      color: var(--muted);
+      text-align: center;
+    }
+
+    .empty-state svg {
+      color: #d4d4d8;
+      opacity: 0.82;
+    }
+
+    .empty-state p {
+      margin: 0;
+      color: var(--text);
+      font-weight: 650;
+    }
+
+    .empty-state span {
+      color: var(--muted);
+      font-size: 12px;
+    }
+
+    @media (max-width: 1060px) {
+      .workspace {
+        grid-template-columns: minmax(0, 1fr);
       }
 
-      .editors {
-        grid-template-rows: none;
+      .preview-frame {
+        min-height: 420px;
+      }
+    }
+
+    @media (max-width: 680px) {
+      .app-header {
+        position: static;
+        align-items: flex-start;
+        flex-direction: column;
+        gap: 10px;
+      }
+
+      .header-note {
+        max-width: none;
+        text-align: left;
+      }
+
+      .header-actions {
+        width: 100%;
+        align-items: flex-start;
+        justify-content: space-between;
+      }
+
+      main {
+        width: 100vw;
+        max-width: 100vw;
+        padding: 14px;
+        overflow-x: hidden;
+      }
+
+      .workspace {
+        display: flex;
+        width: 100%;
+        max-width: 100%;
+        flex-direction: column;
+      }
+
+      .source-card, .settings-card, .preview-card {
+        width: calc(100vw - 28px);
+        max-width: calc(100vw - 28px);
+        padding: 12px;
+      }
+
+      .settings-grid {
+        grid-template-columns: 1fr;
+        gap: 10px;
+      }
+
+      .preview-toolbar {
+        align-items: stretch;
+        flex-direction: column;
+      }
+
+      .preview-actions {
+        display: grid;
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+        width: 100%;
+      }
+
+      .icon-button {
+        width: 100%;
+      }
+
+      textarea {
+        min-height: 220px;
+      }
+
+      .tabs, .segmented {
+        width: 100%;
+      }
+
+      .tab, .segment {
+        padding-inline: 8px;
+        font-size: 12px;
+      }
+
+      .workspace, .column, .card, .source-pane, .field {
+        width: 100%;
+        max-width: 100%;
+      }
+
+      textarea {
+        white-space: pre-wrap;
+        overflow-wrap: anywhere;
       }
     }
   </style>
 </head>
-<body>
-  <header>
-    <h1>htimg</h1>
-    <span>HTML, CSS, or URL to PNG</span>
+<body data-mode="paste">
+  <header class="app-header">
+    <div class="brand">
+      <img class="brand-logo" src="/logo.webp" alt="htimg">
+      <div class="brand-copy">
+        <h1>htimg</h1>
+        <div class="subtitle">HTML -&gt; Image Renderer</div>
+      </div>
+    </div>
+    <div class="header-actions">
+      <div class="header-note">Render HTML, CSS, or any public URL into PNG or JPEG.</div>
+      <form method="post" action="/logout">
+        <button class="logout-button" type="submit">Log out</button>
+      </form>
+    </div>
   </header>
 
   <main>
-    <section class="editors">
-      <div class="mode-group">
-        Source
-        <div class="mode-row" role="radiogroup" aria-label="Source">
-          <label>
-            <input type="radio" name="mode" value="paste" checked>
-            Paste
-          </label>
-          <label>
-            <input type="radio" name="mode" value="url">
-            URL
-          </label>
-        </div>
-      </div>
+    <form class="workspace" id="form">
+      <section class="column" aria-label="Source">
+        <div class="card source-card">
+          <div class="tabs" role="radiogroup" aria-label="Source type">
+            <label class="tab">
+              <input type="radio" name="mode" value="paste" checked>
+              HTML &amp; CSS
+            </label>
+            <label class="tab">
+              <input type="radio" name="mode" value="url">
+              Website URL
+            </label>
+          </div>
 
-      <label class="url-panel">
-        Website URL
-        <input id="url" type="url" placeholder="https://example.com" autocomplete="url">
-      </label>
-
-      <label class="paste-field">
-        HTML
-        <textarea id="html" spellcheck="false"><main class="card">
+          <div class="source-pane" data-pane="paste">
+            <div class="field">
+              <label for="html">HTML</label>
+              <textarea id="html" spellcheck="false" placeholder="Paste HTML markup here."><main class="card">
   <p class="eyebrow">Snapshot</p>
   <h2>HTML rendered to an image</h2>
-  <p>Paste markup and CSS, choose a viewport, then render a PNG.</p>
+  <p>Paste markup and CSS, choose a viewport, then render an image.</p>
 </main></textarea>
-      </label>
+            </div>
 
-      <label class="paste-field">
-        CSS
-        <textarea id="css" spellcheck="false">body {
+            <div class="field">
+              <label for="css">CSS</label>
+              <textarea id="css" spellcheck="false" placeholder="Add CSS for the HTML above.">@import url("https://fonts.googleapis.com/css2?family=Geist:wght@400;600;800&display=swap");
+
+body {
   display: grid;
   place-items: center;
   min-height: 100vh;
-  background: #e8efe9;
-  font-family: Inter, ui-sans-serif, system-ui, sans-serif;
+  background: #09090b;
+  color: #f4f4f5;
+  font-family: "Geist", ui-sans-serif, system-ui, sans-serif;
 }
 
 .card {
-  width: 680px;
+  width: min(680px, calc(100vw - 48px));
   padding: 56px;
-  background: white;
-  border: 1px solid #ccd8d0;
-  border-radius: 8px;
+  background: #111114;
+  border: 1px solid #2a2a32;
+  border-radius: 18px;
 }
 
 .eyebrow {
   margin: 0 0 12px;
-  color: #146c5c;
+  color: #818cf8;
   font-weight: 800;
   text-transform: uppercase;
 }
@@ -308,32 +692,129 @@ h2 {
 
 p {
   margin: 0;
-  color: #4f5c57;
+  color: #a1a1aa;
   font-size: 20px;
 }</textarea>
-      </label>
-    </section>
+            </div>
+          </div>
 
-    <section class="output">
-      <form class="controls" id="form">
-        <label>
-          Width
-          <input id="width" type="number" min="100" max="5000" value="1200">
-        </label>
-        <label>
-          Height
-          <input id="height" type="number" min="100" max="5000" value="800">
-        </label>
-        <label>
-          Scale
-          <input id="scale" type="number" min="1" max="4" value="1">
-        </label>
-        <button id="render" type="submit">Render PNG</button>
-      </form>
+          <div class="source-pane" data-pane="url">
+            <div class="field">
+              <label for="url">Website URL</label>
+              <input id="url" type="url" placeholder="https://example.com" autocomplete="url">
+              <p class="help">Paste a public webpage.</p>
+            </div>
+          </div>
+        </div>
+      </section>
 
-      <div class="preview" id="preview"></div>
-      <div class="status" id="status"></div>
-    </section>
+      <section class="column" aria-label="Output">
+        <div class="card settings-card">
+          <div class="card-title">Output Settings</div>
+
+          <div class="settings-grid">
+            <div class="field">
+              <label for="width">Width</label>
+              <input id="width" type="number" min="100" max="5000" value="1200" inputmode="numeric">
+            </div>
+            <div class="field">
+              <label for="height">Height</label>
+              <input id="height" type="number" min="100" max="5000" value="630" inputmode="numeric">
+            </div>
+            <div class="field">
+              <label for="scale">Scale</label>
+              <input id="scale" type="number" min="1" max="4" value="1" inputmode="numeric">
+            </div>
+          </div>
+
+          <div class="field">
+            <div class="label">Viewport Presets</div>
+            <div class="presets" aria-label="Viewport presets">
+              <button class="preset active" type="button" data-width="1200" data-height="630">1200x630</button>
+              <button class="preset" type="button" data-width="1920" data-height="1080">1920x1080</button>
+              <button class="preset" type="button" data-width="1080" data-height="1080">1080x1080</button>
+              <button class="preset" type="button" data-width="1080" data-height="1350">1080x1350</button>
+            </div>
+          </div>
+
+          <div class="settings-grid">
+            <div class="field">
+              <div class="label">Output Format</div>
+              <div class="segmented" role="radiogroup" aria-label="Output format">
+                <label class="segment">
+                  <input type="radio" name="format" value="png" checked>
+                  PNG
+                </label>
+                <label class="segment">
+                  <input type="radio" name="format" value="jpeg">
+                  JPEG
+                </label>
+              </div>
+            </div>
+            <div class="field">
+              <div class="label">Background</div>
+              <div class="segmented" role="radiogroup" aria-label="Background">
+                <label class="segment">
+                  <input type="radio" name="background" value="transparent">
+                  Transparent
+                </label>
+                <label class="segment">
+                  <input type="radio" name="background" value="solid" checked>
+                  Solid
+                </label>
+              </div>
+            </div>
+            <div class="actions-row">
+              <span class="label">Render</span>
+              <button class="primary-button" id="render" type="submit">
+                <span class="spinner" aria-hidden="true"></span>
+                <span id="renderLabel">Render Image</span>
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <div class="card preview-card">
+          <div class="preview-toolbar">
+            <div class="preview-meta">
+              <div class="card-title">Preview</div>
+              <div class="status" id="status">Render an image to begin.</div>
+            </div>
+            <div class="preview-actions" aria-label="Preview actions">
+              <a class="icon-button" id="download" href="#" download="snapshot.png" title="Download" aria-label="Download" hidden>
+                <svg width="17" height="17" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+                  <path d="M12 3v12m0 0 4-4m-4 4-4-4M4 17v2a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-2" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                </svg>
+              </a>
+              <button class="icon-button" id="copy" type="button" title="Copy" aria-label="Copy" hidden>
+                <svg width="17" height="17" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+                  <rect x="9" y="9" width="11" height="11" rx="2" stroke="currentColor" stroke-width="2"/>
+                  <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+                </svg>
+              </button>
+              <a class="icon-button" id="open" href="#" target="_blank" rel="noopener" title="Open" aria-label="Open" hidden>
+                <svg width="17" height="17" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+                  <path d="M14 3h7v7m0-7-9 9" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                  <path d="M11 5H6a2 2 0 0 0-2 2v11a2 2 0 0 0 2 2h11a2 2 0 0 0 2-2v-5" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+                </svg>
+              </a>
+            </div>
+          </div>
+
+          <div class="preview-frame" id="preview">
+            <div class="empty-state">
+              <svg width="34" height="34" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+                <rect x="3" y="5" width="18" height="14" rx="2" stroke="currentColor" stroke-width="2"/>
+                <path d="m8 13 2.2-2.2a1 1 0 0 1 1.4 0L16 15M14 13l1.2-1.2a1 1 0 0 1 1.4 0L21 16" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                <circle cx="8" cy="9" r="1" fill="currentColor"/>
+              </svg>
+              <p>Your rendered image will appear here.</p>
+              <span>Render an image to begin.</span>
+            </div>
+          </div>
+        </div>
+      </section>
+    </form>
   </main>
 
   <script>
@@ -341,34 +822,124 @@ p {
     const statusEl = document.querySelector("#status");
     const preview = document.querySelector("#preview");
     const button = document.querySelector("#render");
+    const renderLabel = document.querySelector("#renderLabel");
+    const downloadLink = document.querySelector("#download");
+    const openLink = document.querySelector("#open");
+    const copyButton = document.querySelector("#copy");
     const modeInputs = document.querySelectorAll('input[name="mode"]');
+    const formatInputs = document.querySelectorAll('input[name="format"]');
+    const backgroundInputs = document.querySelectorAll('input[name="background"]');
+    const presetButtons = document.querySelectorAll(".preset");
+    const controls = form.querySelectorAll("input, textarea, button");
     let currentURL = "";
+    let currentBlob = null;
+    let currentFilename = "snapshot.png";
 
-    function selectedMode() {
-      return document.querySelector('input[name="mode"]:checked').value;
+    function checkedValue(name) {
+      return document.querySelector(`input[name="${name}"]:checked`).value;
     }
 
     function syncMode() {
-      document.body.dataset.mode = selectedMode();
+      document.body.dataset.mode = checkedValue("mode");
+    }
+
+    function syncFormatConstraints() {
+      const format = checkedValue("format");
+      const transparent = document.querySelector('input[name="background"][value="transparent"]');
+      const solid = document.querySelector('input[name="background"][value="solid"]');
+      transparent.disabled = format === "jpeg";
+      if (format === "jpeg" && transparent.checked) {
+        solid.checked = true;
+      }
+    }
+
+    function setBusy(isBusy) {
+      document.body.dataset.rendering = String(isBusy);
+      controls.forEach((control) => {
+        if (control.id !== "copy") {
+          control.disabled = isBusy;
+        }
+      });
+      button.disabled = isBusy;
+      renderLabel.textContent = isBusy ? "Rendering..." : "Render Image";
+    }
+
+    function syncPresets() {
+      const width = document.querySelector("#width").value;
+      const height = document.querySelector("#height").value;
+      presetButtons.forEach((preset) => {
+        preset.classList.toggle("active", preset.dataset.width === width && preset.dataset.height === height);
+      });
+    }
+
+    function showPreview(blob, filename) {
+      if (currentURL) {
+        URL.revokeObjectURL(currentURL);
+      }
+      currentBlob = blob;
+      currentFilename = filename;
+      currentURL = URL.createObjectURL(blob);
+
+      preview.innerHTML = "";
+      const img = document.createElement("img");
+      img.src = currentURL;
+      img.alt = "Rendered image";
+      preview.append(img);
+
+      downloadLink.href = currentURL;
+      downloadLink.download = filename;
+      openLink.href = currentURL;
+      downloadLink.hidden = false;
+      openLink.hidden = false;
+      copyButton.hidden = false;
     }
 
     modeInputs.forEach((input) => input.addEventListener("change", syncMode));
-    syncMode();
+    formatInputs.forEach((input) => input.addEventListener("change", syncFormatConstraints));
+    ["#width", "#height"].forEach((selector) => {
+      document.querySelector(selector).addEventListener("input", syncPresets);
+    });
+    presetButtons.forEach((preset) => {
+      preset.addEventListener("click", () => {
+        document.querySelector("#width").value = preset.dataset.width;
+        document.querySelector("#height").value = preset.dataset.height;
+        syncPresets();
+      });
+    });
+
+    copyButton.addEventListener("click", async () => {
+      if (!currentBlob || !navigator.clipboard || !window.ClipboardItem) {
+        return;
+      }
+      try {
+        await navigator.clipboard.write([new ClipboardItem({[currentBlob.type]: currentBlob})]);
+        statusEl.className = "status success";
+        statusEl.textContent = `Copied ${currentFilename}.`;
+      } catch (error) {
+        statusEl.className = "status error";
+        statusEl.textContent = "Copy failed. Use download instead.";
+      }
+    });
 
     form.addEventListener("submit", async (event) => {
       event.preventDefault();
       statusEl.className = "status";
       statusEl.textContent = "Rendering...";
-      button.disabled = true;
+      setBusy(true);
 
       try {
-        const mode = selectedMode();
+        const mode = checkedValue("mode");
+        const format = checkedValue("format");
+        const filename = `snapshot.${format === "jpeg" ? "jpg" : "png"}`;
         const payload = {
           width: Number(document.querySelector("#width").value),
           height: Number(document.querySelector("#height").value),
           deviceScaleFactor: Number(document.querySelector("#scale").value),
-          filename: "snapshot.png"
+          format,
+          background: checkedValue("background"),
+          filename
         };
+
         if (mode === "url") {
           payload.url = document.querySelector("#url").value;
         } else {
@@ -383,34 +954,26 @@ p {
         });
 
         if (!response.ok) {
-          const payload = await response.json().catch(() => ({error: "render failed"}));
-          throw new Error(payload.error || "render failed");
+          const body = await response.json().catch(() => ({error: "render failed"}));
+          throw new Error(body.error || "render failed");
         }
 
         const blob = await response.blob();
-        if (currentURL) {
-          URL.revokeObjectURL(currentURL);
-        }
-        currentURL = URL.createObjectURL(blob);
-        preview.innerHTML = "";
-
-        const link = document.createElement("a");
-        link.href = currentURL;
-        link.download = "snapshot.png";
-
-        const img = document.createElement("img");
-        img.src = currentURL;
-        img.alt = "Rendered PNG";
-        link.append(img);
-        preview.append(link);
-        statusEl.textContent = `${blob.size.toLocaleString()} bytes`;
+        showPreview(blob, filename);
+        statusEl.className = "status success";
+        statusEl.textContent = `${filename} - ${blob.size.toLocaleString()} bytes`;
       } catch (error) {
         statusEl.className = "status error";
         statusEl.textContent = error.message;
       } finally {
-        button.disabled = false;
+        setBusy(false);
+        syncFormatConstraints();
       }
     });
+
+    syncMode();
+    syncFormatConstraints();
+    syncPresets();
   </script>
 </body>
 </html>

@@ -19,6 +19,12 @@ func TestNormalizeDefaults(t *testing.T) {
 	if req.DeviceScaleFactor != 1 {
 		t.Fatalf("deviceScaleFactor = %d, want 1", req.DeviceScaleFactor)
 	}
+	if req.Format != "png" {
+		t.Fatalf("format = %q, want png", req.Format)
+	}
+	if req.Background != "solid" {
+		t.Fatalf("background = %q, want solid", req.Background)
+	}
 }
 
 func TestValidateRequiresSource(t *testing.T) {
@@ -52,6 +58,20 @@ func TestValidateRejectsUnsupportedURLScheme(t *testing.T) {
 func TestValidateBounds(t *testing.T) {
 	req := normalize(Request{HTML: "<p>ok</p>", Width: 99})
 	err := validate(req)
+	if !errors.Is(err, ErrInvalidRequest) {
+		t.Fatalf("error = %v, want ErrInvalidRequest", err)
+	}
+}
+
+func TestValidateAcceptsJPEG(t *testing.T) {
+	err := validate(normalize(Request{HTML: "<p>ok</p>", Format: "jpeg"}))
+	if err != nil {
+		t.Fatalf("error = %v, want nil", err)
+	}
+}
+
+func TestValidateRejectsTransparentJPEG(t *testing.T) {
+	err := validate(normalize(Request{HTML: "<p>ok</p>", Format: "jpeg", Background: "transparent"}))
 	if !errors.Is(err, ErrInvalidRequest) {
 		t.Fatalf("error = %v, want ErrInvalidRequest", err)
 	}
