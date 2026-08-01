@@ -46,7 +46,7 @@ func TestLoadConfigResolvesDBPathRelativeToEnv(t *testing.T) {
 	if err := os.MkdirAll(filepath.Dir(envPath), 0o755); err != nil {
 		t.Fatalf("MkdirAll() error = %v", err)
 	}
-	if err := os.WriteFile(envPath, []byte("ADMIN_USERNAME=admin\nADMIN_PASSWORD=secret\nSESSION_SECRET=secret\nDB_PATH=../data/main.sqlite\n"), 0o600); err != nil {
+	if err := os.WriteFile(envPath, []byte("ADMIN_USERNAME=admin\nADMIN_PASSWORD=secret\nSESSION_SECRET=secret\n"), 0o600); err != nil {
 		t.Fatalf("WriteFile() error = %v", err)
 	}
 

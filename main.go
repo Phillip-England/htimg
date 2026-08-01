@@ -25,7 +25,7 @@ var webFS embed.FS
 
 const maxRenderBodyBytes = 20 << 20
 const defaultAddr = "127.0.0.1:9993"
-const defaultEnvPath = "config/.env"
+const defaultEnvPath = "./config/.env"
 
 func main() {
 	if err := run(os.Args[1:]); err != nil {
@@ -50,7 +50,7 @@ func run(args []string) error {
 
 	fs := flag.NewFlagSet("serve", flag.ContinueOnError)
 	addr := fs.String("addr", getenv("HTIMG_ADDR", defaultAddr), "listen address")
-	envPath := fs.String("env", getenv("HTIMG_ENV", defaultEnvPath), "environment file path")
+	envPath := fs.String("env", defaultEnvPath, "environment file path")
 	if err := fs.Parse(args); err != nil {
 		return err
 	}

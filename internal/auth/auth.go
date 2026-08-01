@@ -28,6 +28,7 @@ const (
 	failureWindow     = 24 * time.Hour
 	maxFailures       = 5
 	protectedAppPath  = "/app"
+	defaultDBPath     = "data/main.sqlite"
 )
 
 var loginTemplate = template.Must(template.New("login").Parse(`<!doctype html>
@@ -102,7 +103,7 @@ func Init(envPath string) error {
 		if err != nil {
 			return err
 		}
-		body := fmt.Sprintf("ADMIN_USERNAME=admin\nADMIN_PASSWORD=change-me-now\nSESSION_SECRET=%s\nDB_PATH=../data/main.sqlite\n", secret)
+		body := fmt.Sprintf("ADMIN_USERNAME=admin\nADMIN_PASSWORD=change-me-now\nSESSION_SECRET=%s\n", secret)
 		if err := os.WriteFile(envPath, []byte(body), 0o600); err != nil {
 			return err
 		}
@@ -147,16 +148,21 @@ func LoadConfig(envPath string) (Config, error) {
 		AdminUsername: values["ADMIN_USERNAME"],
 		AdminPassword: values["ADMIN_PASSWORD"],
 		SessionSecret: values["SESSION_SECRET"],
-		DBPath:        values["DB_PATH"],
+		DBPath:        DBPathForEnv(envPath),
 	}
-	if cfg.AdminUsername == "" || cfg.AdminPassword == "" || cfg.SessionSecret == "" || cfg.DBPath == "" {
-		return Config{}, errors.New("env file must define ADMIN_USERNAME, ADMIN_PASSWORD, SESSION_SECRET, and DB_PATH")
+	if cfg.AdminUsername == "" || cfg.AdminPassword == "" || cfg.SessionSecret == "" {
+		return Config{}, errors.New("env file must define ADMIN_USERNAME, ADMIN_PASSWORD, and SESSION_SECRET")
 	}
 
-	if !filepath.IsAbs(cfg.DBPath) {
-		cfg.DBPath = filepath.Clean(filepath.Join(filepath.Dir(envPath), cfg.DBPath))
-	}
 	return cfg, nil
+}
+
+func DBPathForEnv(envPath string) string {
+	if envPath == "" {
+		return defaultDBPath
+	}
+	root := filepath.Dir(filepath.Dir(envPath))
+	return filepath.Clean(filepath.Join(root, defaultDBPath))
 }
 
 func OpenDB(path string) (*sql.DB, error) {

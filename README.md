@@ -51,7 +51,6 @@ The generated environment file contains a mock admin account and a random sessio
 ADMIN_USERNAME=admin
 ADMIN_PASSWORD=change-me-now
 SESSION_SECRET=<random-secret>
-DB_PATH=../data/main.sqlite
 ```
 
 Change `ADMIN_PASSWORD` before using the app anywhere outside local development.

@@ -21,7 +21,6 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
 COPY --from=build /out/htimg ./htimg
 
 ENV CHROME_PATH=/usr/bin/chromium
-ENV HTIMG_ENV=/app/config/.env
 
 EXPOSE 9993
 CMD ["./htimg", "--addr", "0.0.0.0:9993"]
