@@ -1,0 +1,22 @@
+{
+  "variables": [
+    {
+      "name": "ADMIN_USERNAME",
+      "description": "Username for the single htimg operator account. Choose the value the operator will enter on the login screen.",
+      "example": "admin",
+      "required": true
+    },
+    {
+      "name": "ADMIN_PASSWORD",
+      "description": "Password for the single htimg operator account. Set this to a strong secret before using the app outside local development.",
+      "example": "replace-with-a-strong-password",
+      "required": true
+    },
+    {
+      "name": "SESSION_SECRET",
+      "description": "Secret used to sign htimg session cookies. Generate a long random value and keep it private.",
+      "example": "64-character-random-hex-string",
+      "required": true
+    }
+  ]
+}
